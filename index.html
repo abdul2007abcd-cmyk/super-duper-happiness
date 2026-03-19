@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SpeakCircle Chennai — Events</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;0,900;1,700&family=Plus+Jakarta+Sans:wght@300;400;500;600&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{
+  --cream:#FAF7F2;--cream2:#F2EDE4;--cream3:#E8E0D2;--cream4:#DDD4C4;
+  --ink:#1A1510;--ink2:#3D3529;--ink3:#6B5F4F;--ink4:#9C8E7C;
+  --rust:#C84B2F;--rust-l:#F0C4B8;--rust-d:#8B2E19;
+  --teal:#1B6B62;--teal-l:#B8DAD6;
+  --amber:#D4820A;--amber-l:#F5DCA8;
+  --green:#2D7A3A;--green-l:#C6E6CA;
+  --white:#FFFFFF;--border:rgba(26,21,16,0.1);--border2:rgba(26,21,16,0.18);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--cream);color:var(--ink);overflow-x:hidden;}
+
+/* ── NAV ── */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:0 20px;display:flex;align-items:center;justify-content:space-between;height:60px;background:rgba(250,247,242,0.95);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);}
+.nav-logo{font-family:'Playfair Display',serif;font-size:18px;font-weight:800;color:var(--ink);text-decoration:none;display:flex;align-items:center;gap:8px;}
+.logo-mark{width:28px;height:28px;background:var(--rust);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Courier Prime',monospace;font-size:12px;color:#fff;font-weight:700;flex-shrink:0;}
+.nav-center{display:flex;align-items:center;gap:4px;background:var(--cream2);border:1px solid var(--border2);border-radius:100px;padding:3px 5px;}
+.nav-pill{padding:5px 12px;border-radius:100px;font-size:12px;color:var(--ink3);cursor:pointer;border:none;background:none;font-family:'Plus Jakarta Sans',sans-serif;transition:all 0.2s;font-weight:500;}
+.nav-pill:hover,.nav-pill.active{background:var(--white);color:var(--ink);box-shadow:0 1px 4px rgba(0,0,0,0.1);}
+.nav-right{display:flex;align-items:center;gap:8px;}
+.city-dot{width:7px;height:7px;border-radius:50%;background:var(--rust);animation:blink 2s ease-in-out infinite;flex-shrink:0;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.4}}
+.btn-nav{background:var(--ink);color:var(--cream);padding:8px 16px;border-radius:100px;font-size:13px;font-weight:600;border:none;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;transition:all 0.2s;white-space:nowrap;}
+.btn-nav:hover{background:var(--rust);}
+
+/* ── VIEWS ── */
+#listing-view{display:block;}
+#detail-view{display:none;}
+
+/* ── LISTING HEADER ── */
+.listing-header{padding:80px 20px 28px;max-width:1280px;margin:0 auto;}
+.lh-top{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:14px;}
+.lh-eyebrow{display:inline-flex;align-items:center;gap:6px;font-family:'Courier Prime',monospace;font-size:11px;color:var(--rust);letter-spacing:0.08em;background:var(--rust-l);padding:4px 12px;border-radius:4px;}
+.sync-pill{display:inline-flex;align-items:center;gap:5px;font-family:'Courier Prime',monospace;font-size:10px;padding:4px 10px;border-radius:100px;border:1px solid transparent;}
+.lh-title{font-family:'Playfair Display',serif;font-size:clamp(32px,8vw,60px);font-weight:900;line-height:1.05;letter-spacing:-0.02em;margin-bottom:12px;}
+.lh-title em{font-style:italic;color:var(--rust);}
+.lh-sub{font-size:14px;color:var(--ink3);line-height:1.7;max-width:540px;font-weight:300;}
+
+/* ── FILTERS ── */
+.filters-bar{padding:0 20px 20px;max-width:1280px;margin:0 auto;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.filter-group{display:flex;gap:3px;background:var(--cream2);border:1px solid var(--border2);border-radius:8px;padding:3px;flex-wrap:wrap;}
+.ftab{padding:6px 14px;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;border:none;background:none;color:var(--ink3);font-family:'Plus Jakarta Sans',sans-serif;transition:all 0.18s;}
+.ftab.active{background:var(--white);color:var(--ink);box-shadow:0 1px 4px rgba(0,0,0,0.1);}
+.filter-search{padding:8px 14px;border-radius:8px;background:var(--white);border:1.5px solid var(--border2);color:var(--ink);font-size:13px;outline:none;font-family:'Plus Jakarta Sans',sans-serif;flex:1;min-width:120px;max-width:220px;}
+.filter-search:focus{border-color:var(--ink3);}
+.results-count{font-family:'Courier Prime',monospace;font-size:11px;color:var(--ink4);}
+
+/* ── EVENTS GRID ── */
+.events-grid{padding:0 20px 60px;max-width:1280px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;}
+.event-card{background:var(--white);border:1px solid var(--border2);border-radius:14px;overflow:hidden;cursor:pointer;transition:all 0.22s;-webkit-tap-highlight-color:transparent;}
+.event-card:hover{transform:translateY(-3px);box-shadow:0 16px 48px rgba(26,21,16,0.1);}
+.ec-bar{height:4px;}
+.ec-bar.rust{background:var(--rust);}
+.ec-bar.teal{background:var(--teal);}
+.ec-bar.amber{background:var(--amber);}
+.ec-body{padding:18px;}
+.ec-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;}
+.ec-badge{font-family:'Courier Prime',monospace;font-size:9px;letter-spacing:0.1em;font-weight:700;padding:3px 8px;border-radius:4px;}
+.ec-badge.rust{background:var(--rust-l);color:var(--rust-d);}
+.ec-badge.teal{background:var(--teal-l);color:var(--teal);}
+.ec-badge.amber{background:var(--amber-l);color:var(--amber);}
+.ec-dot{width:8px;height:8px;border-radius:50%;background:var(--teal);margin-top:3px;flex-shrink:0;}
+.ec-dot.full{background:var(--rust);}
+.ec-title{font-family:'Playfair Display',serif;font-size:18px;font-weight:800;line-height:1.2;margin-bottom:5px;}
+.ec-theme{font-size:12px;color:var(--ink3);font-style:italic;margin-bottom:14px;}
+.ec-meta{display:flex;flex-direction:column;gap:7px;margin-bottom:14px;}
+.ec-row{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--ink3);}
+.ec-icon{width:24px;height:24px;border-radius:5px;background:var(--cream2);display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;}
+.spots-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;}
+.spots-track{height:4px;background:var(--cream3);border-radius:2px;overflow:hidden;margin-bottom:14px;}
+.spots-fill{height:100%;border-radius:2px;transition:width 0.8s ease;}
+.ec-footer{display:flex;justify-content:space-between;align-items:center;padding-top:14px;border-top:1px solid var(--border);}
+.ec-price{font-family:'Playfair Display',serif;font-size:22px;font-weight:800;}
+.ec-mprice{font-size:10px;color:var(--ink4);font-family:'Courier Prime',monospace;}
+.book-btn{padding:9px 18px;border-radius:8px;background:var(--ink);color:var(--cream);font-size:13px;font-weight:600;border:none;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;transition:all 0.2s;}
+.book-btn:hover{background:var(--rust);}
+.sold-badge{font-family:'Courier Prime',monospace;font-size:10px;color:var(--rust);font-weight:700;padding:4px 10px;border:1.5px solid var(--rust-l);border-radius:6px;}
+
+/* ── SKELETON ── */
+.skel{background:linear-gradient(90deg,var(--cream2) 25%,var(--cream3) 50%,var(--cream2) 75%);background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:14px;height:300px;}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.no-events{grid-column:1/-1;text-align:center;padding:60px 24px;}
+.no-events h3{font-family:'Playfair Display',serif;font-size:22px;color:var(--ink3);margin-bottom:8px;}
+.no-events p{font-size:13px;color:var(--ink4);margin-top:6px;}
+
+/* ── DETAIL ── */
+.detail-nav{padding:72px 20px 16px;max-width:1280px;margin:0 auto;}
+.back-btn{display:inline-flex;align-items:center;gap:8px;font-size:14px;color:var(--ink3);cursor:pointer;border:none;background:none;font-family:'Plus Jakarta Sans',sans-serif;padding:8px 0;transition:color 0.2s;}
+.back-btn:hover{color:var(--rust);}
+.detail-wrap{max-width:1280px;margin:0 auto;padding:0 20px 60px;}
+.detail-grid{display:grid;grid-template-columns:1fr 360px;gap:40px;align-items:start;}
+.dh-badge{display:inline-flex;align-items:center;font-family:'Courier Prime',monospace;font-size:10px;letter-spacing:0.1em;padding:4px 12px;border-radius:4px;margin-bottom:16px;font-weight:700;}
+.dh-badge.rust{background:var(--rust-l);color:var(--rust-d);}
+.dh-badge.teal{background:var(--teal-l);color:var(--teal);}
+.dh-badge.amber{background:var(--amber-l);color:var(--amber);}
+.dh-title{font-family:'Playfair Display',serif;font-size:clamp(28px,5vw,48px);font-weight:900;line-height:1.05;letter-spacing:-0.02em;margin-bottom:12px;}
+.dh-desc{font-size:15px;color:var(--ink3);line-height:1.7;margin-bottom:28px;font-weight:300;}
+.facts-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:28px;}
+.fact{background:var(--white);border:1px solid var(--border2);border-radius:10px;padding:14px 16px;}
+.fact-lbl{font-family:'Courier Prime',monospace;font-size:9px;letter-spacing:0.08em;color:var(--ink4);margin-bottom:4px;}
+.fact-val{font-size:13px;font-weight:600;color:var(--ink);line-height:1.35;}
+.bullets-head{font-size:14px;font-weight:600;color:var(--ink);margin-bottom:12px;}
+.bullets-list{display:flex;flex-direction:column;gap:9px;}
+.bullet-row{display:flex;gap:10px;font-size:13px;color:var(--ink3);line-height:1.55;align-items:flex-start;}
+.bdot{width:6px;height:6px;border-radius:50%;margin-top:6px;flex-shrink:0;}
+.bdot.rust{background:var(--rust);}
+.bdot.teal{background:var(--teal);}
+.bdot.amber{background:var(--amber);}
+
+/* ── BOOKING PANEL ── */
+.bpanel{background:var(--white);border:1px solid var(--border2);border-radius:16px;padding:24px;position:sticky;top:72px;}
+.bp-h{font-family:'Playfair Display',serif;font-size:18px;font-weight:800;margin-bottom:4px;}
+.bp-price{font-family:'Playfair Display',serif;font-size:36px;font-weight:900;}
+.bp-mprice{font-size:12px;color:var(--ink4);margin-bottom:16px;}
+.bp-srow{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;}
+.bp-st{font-size:12px;color:var(--ink3);font-weight:500;}
+.bp-slbl{font-family:'Courier Prime',monospace;font-size:10px;font-weight:700;}
+.bp-track{height:5px;background:var(--cream3);border-radius:3px;overflow:hidden;margin-bottom:4px;}
+.bp-fill{height:100%;border-radius:3px;transition:width 0.8s;}
+.bp-hint{font-family:'Courier Prime',monospace;font-size:10px;color:var(--ink4);margin-bottom:18px;}
+.bp-btn{width:100%;padding:14px;border-radius:10px;font-size:15px;font-weight:600;font-family:'Plus Jakarta Sans',sans-serif;border:none;cursor:pointer;transition:filter 0.2s;margin-bottom:10px;color:#fff;}
+.bp-btn:hover{filter:brightness(0.88);}
+.bp-wl{width:100%;padding:11px;border-radius:10px;background:transparent;color:var(--ink3);font-size:13px;font-weight:500;font-family:'Plus Jakarta Sans',sans-serif;border:1.5px solid var(--border2);cursor:pointer;transition:all 0.2s;margin-bottom:20px;}
+.bp-wl:hover{border-color:var(--ink3);}
+.bp-info{display:flex;flex-direction:column;gap:10px;}
+.bp-irow{display:flex;gap:10px;align-items:flex-start;font-size:12px;color:var(--ink3);}
+.bp-iico{width:26px;height:26px;border-radius:6px;background:var(--cream2);display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;}
+.bp-irow b{color:var(--ink);font-weight:600;display:block;font-size:12px;}
+
+/* ── WHY ── */
+.section{padding:64px 20px;}
+.section-inner{max-width:1200px;margin:0 auto;}
+.sec-lbl{font-family:'Courier Prime',monospace;font-size:10px;letter-spacing:0.14em;color:var(--ink4);display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+.sec-lbl::before{content:'';display:block;width:20px;height:1px;background:var(--ink4);}
+.sec-title{font-family:'Playfair Display',serif;font-size:clamp(26px,5vw,44px);font-weight:900;letter-spacing:-0.02em;line-height:1.1;margin-bottom:14px;}
+#why{background:var(--ink);color:var(--cream);}
+#why .sec-lbl{color:rgba(250,247,242,0.4);}
+#why .sec-lbl::before{background:rgba(250,247,242,0.4);}
+#why .sec-title{color:var(--cream);}
+.why-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1px;background:rgba(255,255,255,0.06);margin-top:40px;border:1px solid rgba(255,255,255,0.06);border-radius:12px;overflow:hidden;}
+.why-item{background:var(--ink2);padding:28px 24px;transition:background 0.2s;}
+.why-item:hover{background:rgba(200,75,47,0.15);}
+.why-ico{font-size:24px;margin-bottom:16px;}
+.why-title{font-family:'Playfair Display',serif;font-size:18px;font-weight:800;color:var(--cream);margin-bottom:8px;}
+.why-desc{font-size:13px;color:rgba(250,247,242,0.6);line-height:1.65;font-weight:300;}
+#stories{background:var(--cream);}
+.stories-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-top:36px;}
+.story-card{background:var(--white);border:1px solid var(--border2);border-radius:12px;padding:24px;}
+.story-q{font-family:'Playfair Display',serif;font-style:italic;font-size:15px;line-height:1.65;color:var(--ink2);margin-bottom:20px;}
+.story-author{display:flex;align-items:center;gap:12px;}
+.story-av{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:15px;font-weight:800;flex-shrink:0;}
+.story-name{font-size:13px;font-weight:600;color:var(--ink);}
+.story-role{font-size:11px;color:var(--ink4);}
+.story-tag{display:inline-block;font-family:'Courier Prime',monospace;font-size:9px;letter-spacing:0.06em;padding:2px 7px;border-radius:3px;margin-top:3px;}
+#faq{background:var(--cream2);}
+.faq-list{max-width:700px;margin-top:32px;}
+.faq-item{border-bottom:1px solid var(--border2);}
+.faq-q{display:flex;justify-content:space-between;align-items:center;padding:16px 0;cursor:pointer;font-size:15px;font-weight:600;color:var(--ink);gap:12px;}
+.faq-q:hover{color:var(--rust);}
+.faq-ico{font-size:18px;color:var(--ink4);transition:transform 0.2s;flex-shrink:0;}
+.faq-a{font-size:13px;color:var(--ink3);line-height:1.7;padding-bottom:16px;display:none;}
+.faq-item.open .faq-a{display:block;}
+.faq-item.open .faq-ico{transform:rotate(45deg);}
+.cta{background:var(--rust);color:#fff;padding:60px 20px;text-align:center;}
+.cta h2{font-family:'Playfair Display',serif;font-size:clamp(28px,6vw,52px);font-weight:900;letter-spacing:-0.02em;line-height:1.05;margin-bottom:14px;}
+.cta p{font-size:15px;opacity:0.85;max-width:480px;margin:0 auto 28px;line-height:1.65;font-weight:300;}
+.btn-white{background:#fff;color:var(--rust);padding:13px 28px;border-radius:6px;font-size:15px;font-weight:700;border:none;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;transition:all 0.2s;}
+.btn-white:hover{background:var(--cream);}
+footer{background:var(--ink);color:var(--cream);padding:48px 20px 24px;}
+.footer-inner{max-width:1200px;margin:0 auto;}
+.footer-top{display:flex;gap:40px;margin-bottom:40px;flex-wrap:wrap;}
+.footer-brand{max-width:260px;}
+.footer-logo{font-family:'Playfair Display',serif;font-size:20px;font-weight:800;margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.footer-brand p{font-size:12px;color:rgba(250,247,242,0.5);line-height:1.7;margin-bottom:14px;}
+.footer-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,0.07);padding:5px 10px;border-radius:4px;font-size:11px;color:rgba(250,247,242,0.5);font-family:'Courier Prime',monospace;}
+.footer-col h4{font-family:'Courier Prime',monospace;font-size:9px;letter-spacing:0.12em;color:rgba(250,247,242,0.3);margin-bottom:14px;}
+.footer-col a{display:block;font-size:13px;color:rgba(250,247,242,0.55);text-decoration:none;margin-bottom:9px;cursor:pointer;transition:color 0.2s;}
+.footer-col a:hover{color:var(--cream);}
+.footer-bottom{border-top:1px solid rgba(255,255,255,0.08);padding-top:18px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;}
+.footer-bottom p{font-size:11px;color:rgba(250,247,242,0.3);}
+.admin-link{font-size:11px;color:rgba(250,247,242,0.3);text-decoration:none;font-family:'Courier Prime',monospace;transition:color 0.2s;}
+.admin-link:hover{color:var(--cream);}
+
+/* ══════════════════════════════════════════
+   BOOKING MODAL — 3 STEP FLOW
+   Step 1: Details | Step 2: Payment | Step 3: Success
+   ══════════════════════════════════════════ */
+.modal-bg{display:none;position:fixed;inset:0;z-index:999;background:rgba(26,21,16,0.75);backdrop-filter:blur(10px);align-items:flex-end;justify-content:center;padding:0;}
+.modal-bg.open{display:flex;}
+.modal{background:var(--white);border-radius:20px 20px 0 0;padding:0;width:100%;max-width:540px;position:relative;animation:slideUp 0.35s cubic-bezier(0.32,0.72,0,1);max-height:92vh;overflow-y:auto;}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal-handle{width:40px;height:4px;background:var(--cream3);border-radius:2px;margin:12px auto 0;}
+.modal-inner{padding:24px 24px 32px;}
+.modal-close{position:absolute;top:16px;right:16px;background:var(--cream2);border:none;cursor:pointer;width:32px;height:32px;border-radius:50%;font-size:16px;display:flex;align-items:center;justify-content:center;color:var(--ink3);z-index:1;}
+.modal-close:hover{background:var(--cream3);}
+
+/* Step indicator */
+.step-bar{display:flex;align-items:center;gap:0;margin-bottom:24px;}
+.step-dot{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;font-family:'Courier Prime',monospace;flex-shrink:0;transition:all 0.3s;}
+.step-dot.done{background:var(--green);color:#fff;}
+.step-dot.active{background:var(--ink);color:var(--cream);}
+.step-dot.inactive{background:var(--cream3);color:var(--ink4);}
+.step-line{flex:1;height:2px;background:var(--cream3);}
+.step-line.done{background:var(--green);}
+.step-lbl{font-family:'Courier Prime',monospace;font-size:9px;letter-spacing:0.06em;color:var(--ink4);margin-top:4px;text-align:center;}
+
+/* Steps */
+.modal-step{display:none;}
+.modal-step.active{display:block;}
+.modal-tag{font-family:'Courier Prime',monospace;font-size:10px;letter-spacing:0.08em;color:var(--rust);margin-bottom:6px;}
+.modal h2{font-family:'Playfair Display',serif;font-size:22px;font-weight:800;margin-bottom:4px;}
+.modal-sub{font-size:13px;color:var(--ink3);margin-bottom:20px;}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.fg{display:flex;flex-direction:column;gap:4px;margin-bottom:12px;}
+.fg label{font-family:'Courier Prime',monospace;font-size:9px;letter-spacing:0.08em;color:var(--ink3);}
+.fg input,.fg select{padding:11px 13px;border-radius:8px;background:var(--cream2);border:1.5px solid var(--border2);color:var(--ink);font-size:14px;outline:none;font-family:'Plus Jakarta Sans',sans-serif;transition:border-color 0.2s;width:100%;}
+.fg input:focus,.fg select:focus{border-color:var(--ink);background:var(--white);}
+.modal-btn{width:100%;padding:14px;border-radius:10px;background:var(--ink);color:var(--cream);font-size:15px;font-weight:600;border:none;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;transition:background 0.2s;margin-top:6px;}
+.modal-btn:hover{background:var(--rust);}
+.modal-btn:disabled{background:var(--ink4);cursor:not-allowed;}
+.m-err{font-size:12px;color:var(--rust);margin-bottom:10px;display:none;padding:8px 12px;background:var(--rust-l);border-radius:6px;}
+
+/* ── PAYMENT STEP ── */
+.pay-amount{background:var(--cream2);border-radius:12px;padding:16px 20px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center;}
+.pay-amount-lbl{font-size:13px;color:var(--ink3);}
+.pay-amount-val{font-family:'Playfair Display',serif;font-size:28px;font-weight:900;color:var(--rust);}
+
+/* UPI App buttons */
+.upi-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px;}
+.upi-btn{display:flex;align-items:center;gap:10px;padding:14px 16px;border-radius:10px;border:1.5px solid var(--border2);background:var(--white);cursor:pointer;transition:all 0.18s;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:600;color:var(--ink);}
+.upi-btn:hover,.upi-btn.selected{border-color:var(--ink);background:var(--cream2);transform:translateY(-1px);}
+.upi-btn.selected{border-color:var(--rust);background:var(--rust-l);}
+.upi-btn img{width:32px;height:32px;object-fit:contain;border-radius:6px;flex-shrink:0;}
+.upi-btn .upi-name{display:flex;flex-direction:column;}
+.upi-btn .upi-app{font-size:13px;font-weight:600;}
+.upi-btn .upi-id{font-family:'Courier Prime',monospace;font-size:10px;color:var(--ink4);}
+
+/* UPI ID copy box */
+.upi-id-box{background:var(--ink);color:var(--cream);border-radius:10px;padding:14px 18px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.upi-id-text{font-family:'Courier Prime',monospace;font-size:15px;font-weight:700;letter-spacing:0.02em;}
+.upi-copy-btn{background:rgba(255,255,255,0.15);border:none;color:var(--cream);padding:6px 14px;border-radius:6px;font-size:12px;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;flex-shrink:0;transition:background 0.2s;}
+.upi-copy-btn:hover{background:rgba(255,255,255,0.25);}
+.upi-copy-btn.copied{background:var(--green);}
+
+.pay-steps{display:flex;flex-direction:column;gap:8px;margin-bottom:20px;}
+.pay-step{display:flex;align-items:flex-start;gap:10px;font-size:13px;color:var(--ink3);}
+.pay-step-num{width:22px;height:22px;border-radius:50%;background:var(--cream3);display:flex;align-items:center;justify-content:center;font-family:'Courier Prime',monospace;font-size:10px;font-weight:700;color:var(--ink3);flex-shrink:0;margin-top:1px;}
+.pay-divider{display:flex;align-items:center;gap:10px;margin:16px 0;font-size:12px;color:var(--ink4);}
+.pay-divider::before,.pay-divider::after{content:'';flex:1;height:1px;background:var(--border2);}
+
+/* Transaction ID input */
+.txn-wrap{display:flex;flex-direction:column;gap:8px;margin-bottom:16px;}
+.txn-label{font-family:'Courier Prime',monospace;font-size:10px;letter-spacing:0.08em;color:var(--ink3);}
+.txn-input{padding:12px 14px;border-radius:8px;background:var(--cream2);border:1.5px solid var(--border2);color:var(--ink);font-size:14px;font-family:'Courier Prime',monospace;outline:none;letter-spacing:0.04em;transition:border-color 0.2s;}
+.txn-input:focus{border-color:var(--rust);background:var(--white);}
+.txn-hint{font-size:11px;color:var(--ink4);font-style:italic;}
+
+/* ── SUCCESS STEP ── */
+.success-wrap{text-align:center;padding:20px 0 8px;}
+.success-ico{font-size:52px;margin-bottom:16px;animation:pop 0.5s cubic-bezier(0.175,0.885,0.32,1.275);}
+@keyframes pop{0%{transform:scale(0)}100%{transform:scale(1)}}
+.success-title{font-family:'Playfair Display',serif;font-size:24px;font-weight:800;margin-bottom:8px;}
+.success-sub{font-size:14px;color:var(--ink3);line-height:1.65;margin-bottom:24px;}
+.whatsapp-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:14px;border-radius:10px;background:#25D366;color:#fff;font-size:15px;font-weight:600;border:none;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;text-decoration:none;transition:filter 0.2s;margin-bottom:12px;}
+.whatsapp-btn:hover{filter:brightness(0.92);}
+.whatsapp-btn svg{flex-shrink:0;}
+.close-btn{width:100%;padding:12px;border-radius:10px;background:transparent;color:var(--ink3);font-size:14px;font-weight:500;font-family:'Plus Jakarta Sans',sans-serif;border:1.5px solid var(--border2);cursor:pointer;transition:all 0.2s;}
+.close-btn:hover{border-color:var(--ink3);}
+
+/* ── DESKTOP: center modal ── */
+@media(min-width:600px){
+  .modal-bg{align-items:center;padding:20px;}
+  .modal{border-radius:20px;max-height:88vh;}
+  @keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+}
+/* ── RESPONSIVE ── */
+@media(min-width:768px){
+  nav{padding:0 40px;height:64px;}
+  .listing-header{padding:96px 40px 36px;}
+  .filters-bar{padding:0 40px 28px;}
+  .events-grid{padding:0 40px 80px;gap:20px;}
+  .detail-nav{padding:80px 40px 20px;}
+  .detail-wrap{padding:0 40px 80px;}
+  .detail-grid{grid-template-columns:1fr 340px;}
+  .facts-grid{grid-template-columns:1fr 1fr 1fr;}
+  .section{padding:80px 40px;}
+  .cta{padding:80px 40px;}
+  footer{padding:56px 40px 28px;}
+}
+@media(max-width:480px){
+  .frow{grid-template-columns:1fr;}
+  .upi-grid{grid-template-columns:1fr 1fr;}
+  .detail-grid{grid-template-columns:1fr;}
+  .bpanel{position:static;}
+  .facts-grid{grid-template-columns:1fr 1fr;}
+  .nav-center{display:none;}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="#" onclick="showListing();return false;">
+    <div class="logo-mark">SC</div>SpeakCircle
+  </a>
+  <div class="nav-center">
+    <button class="nav-pill active" onclick="showListing()">Events</button>
+    <button class="nav-pill" onclick="goTo('#why')">Why us</button>
+    <button class="nav-pill" onclick="goTo('#stories')">Stories</button>
+    <button class="nav-pill" onclick="goTo('#faq')">FAQ</button>
+  </div>
+  <div class="nav-right">
+    <span class="city-dot"></span>
+    <button class="btn-nav" onclick="openModal(null,event)">Book a spot</button>
+  </div>
+</nav>
+
+<!-- LISTING -->
+<div id="listing-view">
+  <div class="listing-header">
+    <div class="lh-top">
+      <div class="lh-eyebrow">Chennai · Ages 18–30 · Near metro</div>
+      <span id="sync-badge" class="sync-pill" style="background:var(--cream3);color:var(--ink4)">● Loading…</span>
+    </div>
+    <h1 class="lh-title">Find your<br><em>next circle.</em></h1>
+    <p class="lh-sub">Structured small-group events — 60 minutes, capped at 10 people, always near a Chennai metro station.</p>
+  </div>
+  <div class="filters-bar">
+    <div class="filter-group">
+      <button class="ftab active" onclick="setFilter('all',this)">All</button>
+      <button class="ftab" onclick="setFilter('skill',this)">Skill</button>
+      <button class="ftab" onclick="setFilter('social',this)">Social</button>
+      <button class="ftab" onclick="setFilter('network',this)">Network</button>
+    </div>
+    <input class="filter-search" type="text" placeholder="Search…" oninput="setSearch(this.value)"/>
+    <div class="results-count" id="rc">—</div>
+  </div>
+  <div class="events-grid" id="events-grid">
+    <div class="skel"></div><div class="skel"></div><div class="skel"></div>
+  </div>
+</div>
+
+<!-- DETAIL -->
+<div id="detail-view">
+  <div class="detail-nav">
+    <button class="back-btn" onclick="showListing()">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8l4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Back to events
+    </button>
+  </div>
+  <div class="detail-wrap">
+    <div class="detail-grid">
+      <div id="dh-left"></div>
+      <div class="bpanel" id="bpanel"></div>
+    </div>
+  </div>
+</div>
+
+<!-- WHY -->
+<section class="section" id="why">
+  <div class="section-inner">
+    <div class="sec-lbl">WHY SPEAKCIRCLE</div>
+    <h2 class="sec-title" style="color:var(--cream)">Not just another event.<br>A designed experience.</h2>
+    <div class="why-grid">
+      <div class="why-item"><div class="why-ico">🎯</div><div class="why-title">Fixed format</div><div class="why-desc">Every session follows the exact same structure. Anxiety drops, participation soars.</div></div>
+      <div class="why-item"><div class="why-ico">👥</div><div class="why-title">5–10 people only</div><div class="why-desc">Hard-capped every session. Small enough nobody gets lost.</div></div>
+      <div class="why-item"><div class="why-ico">📍</div><div class="why-title">Always near metro</div><div class="why-desc">Every venue within 5 minutes of a Chennai metro stop.</div></div>
+      <div class="why-item"><div class="why-ico">🎙</div><div class="why-title">Trained facilitators</div><div class="why-desc">Certified and rated. They make sure everyone speaks.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- STORIES -->
+<section class="section" id="stories">
+  <div class="section-inner">
+    <div class="sec-lbl">MEMBER STORIES</div>
+    <h2 class="sec-title">From Chennai. For Chennai.</h2>
+    <div class="stories-grid">
+      <div class="story-card"><div class="story-q">"I moved to Chennai 3 months ago and barely knew anyone. After two Social Circles, I had a WhatsApp group with 6 people."</div><div class="story-author"><div class="story-av" style="background:#F0C4B8;color:var(--rust-d)">PR</div><div><div class="story-name">Priya R.</div><div class="story-role">Software Engineer</div><div class="story-tag" style="background:var(--teal-l);color:var(--teal)">SOCIAL CIRCLE</div></div></div></div>
+      <div class="story-card"><div class="story-q">"Three English Circles later, I gave a team presentation without a note card. My manager noticed."</div><div class="story-author"><div class="story-av" style="background:var(--rust-l);color:var(--rust-d)">AK</div><div><div class="story-name">Arjun K.</div><div class="story-role">Product Manager</div><div class="story-tag" style="background:var(--rust-l);color:var(--rust-d)">SKILL CIRCLE</div></div></div></div>
+      <div class="story-card"><div class="story-q">"At a Network Circle on freelancing, someone needed a designer. I was in the room. That became my first paid project."</div><div class="story-author"><div class="story-av" style="background:var(--amber-l);color:var(--amber)">SM</div><div><div class="story-name">Sneha M.</div><div class="story-role">Freelance Designer</div><div class="story-tag" style="background:var(--amber-l);color:var(--amber)">NETWORK CIRCLE</div></div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" id="faq">
+  <div class="section-inner">
+    <div class="sec-lbl">QUESTIONS</div>
+    <h2 class="sec-title">Before you book</h2>
+    <div class="faq-list">
+      <div class="faq-item open"><div class="faq-q" onclick="toggleFaq(this)">Do I need to prepare anything? <span class="faq-ico">+</span></div><div class="faq-a">For Skill and Social Circles — nothing. Just show up. For Network Circles, prepare a 30-second intro.</div></div>
+      <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">What if my English is not strong? <span class="faq-ico">+</span></div><div class="faq-a">Skill Circles are for all levels. No grammar policing. Imperfect English is celebrated.</div></div>
+      <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">I'm introverted. Will I be forced to speak? <span class="faq-ico">+</span></div><div class="faq-a">You'll be gently invited, not forced. Most introverts speak more in one session than they do in a week.</div></div>
+      <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">What is the refund policy? <span class="faq-ico">+</span></div><div class="faq-a">Full refund if cancelled 12+ hours before. If we cancel, full refund plus a discount on your next booking.</div></div>
+      <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">How do I pay? <span class="faq-ico">+</span></div><div class="faq-a">We accept UPI payments via GPay, PhonePe, Paytm or any UPI app. Pay to <strong>speakcircle@slc</strong>, then upload your transaction ID to confirm your spot.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<div class="cta">
+  <h2>Your first circle<br>starts with one booking.</h2>
+  <p>5 to 10 people. 60 minutes. One trained facilitator. Near a Chennai metro station.</p>
+  <button class="btn-white" onclick="openModal(null,event)">Book your spot →</button>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <div class="footer-logo"><div class="logo-mark" style="background:var(--rust)">SC</div>SpeakCircle</div>
+        <p>Curated small-group events in Chennai for young adults who want to communicate better and connect deeper.</p>
+        <div class="footer-badge"><span class="city-dot" style="width:6px;height:6px"></span>Chennai only · Ages 18–30</div>
+      </div>
+      <div class="footer-col">
+        <h4>EVENTS</h4>
+        <a onclick="setFilter('skill',null);showListing()">English Speaking Circle</a>
+        <a onclick="setFilter('social',null);showListing()">Fun Social Circle</a>
+        <a onclick="setFilter('network',null);showListing()">Network Circle</a>
+      </div>
+      <div class="footer-col">
+        <h4>CONTACT</h4>
+        <a><span class="__cf_email__" data-cfemail="b9d1dcd5d5d6f9cac9dcd8d2dad0cbdad5dc97d0d7">[email&#160;protected]</span></a>
+        <a>Instagram</a><a>LinkedIn</a>
+        <a>WhatsApp community</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2026 SpeakCircle Chennai. All rights reserved.</p>
+      <a href="admin.html" class="admin-link">Admin →</a>
+    </div>
+  </div>
+</footer>
+
+<!-- ══════════════════════════════════════
+     BOOKING MODAL — 3 STEPS
+     ══════════════════════════════════════ -->
+<div class="modal-bg" id="modal-bg" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-inner">
+
+      <!-- STEP INDICATOR -->
+      <div style="margin-bottom:20px">
+        <div class="step-bar">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+            <div class="step-dot active" id="sd1">1</div>
+          </div>
+          <div class="step-line" id="sl1"></div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+            <div class="step-dot inactive" id="sd2">2</div>
+          </div>
+          <div class="step-line" id="sl2"></div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+            <div class="step-dot inactive" id="sd3">3</div>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:4px">
+          <span style="font-family:'Courier Prime',monospace;font-size:9px;color:var(--ink4)">Details</span>
+          <span style="font-family:'Courier Prime',monospace;font-size:9px;color:var(--ink4);margin-left:20px">Payment</span>
+          <span style="font-family:'Courier Prime',monospace;font-size:9px;color:var(--ink4)">Confirmed</span>
+        </div>
+      </div>
+
+      <!-- ── STEP 1: BOOKING DETAILS ── -->
+      <div class="modal-step active" id="step1">
+        <div class="modal-tag" id="m-tag">SKILL CIRCLE</div>
+        <h2>Book your spot</h2>
+        <p class="modal-sub" id="m-sub">English Speaking Circle · ₹299</p>
+        <div class="frow">
+          <div class="fg"><label>FIRST NAME</label><input type="text" id="f-fname" placeholder="Your name"/></div>
+          <div class="fg"><label>LAST NAME</label><input type="text" id="f-lname" placeholder="Last name"/></div>
+        </div>
+        <div class="fg"><label>EMAIL</label><input type="email" id="f-email" placeholder="you@email.com"/></div>
+        <div class="fg"><label>PHONE (WhatsApp number)</label><input type="tel" id="f-phone" placeholder="+91 98765 43210"/></div>
+        <div class="frow">
+          <div class="fg"><label>EVENT TYPE</label>
+            <select id="f-type">
+              <option value="skill">Skill Circle — ₹299</option>
+              <option value="social">Social Circle — ₹249</option>
+              <option value="network">Network Circle — ₹399</option>
+            </select>
+          </div>
+          <div class="fg"><label>SELECT SESSION</label><select id="f-event-sel"></select></div>
+        </div>
+        <div class="fg"><label>HOW DID YOU HEAR ABOUT US?</label>
+          <select id="f-source">
+            <option>Instagram</option><option>Friend / referral</option>
+            <option>LinkedIn</option><option>College group</option><option>Other</option>
+          </select>
+        </div>
+        <div class="m-err" id="err1"></div>
+        <button class="modal-btn" onclick="goToPayment()">Continue to payment →</button>
+      </div>
+
+      <!-- ── STEP 2: PAYMENT ── -->
+      <div class="modal-step" id="step2">
+        <div class="modal-tag">PAYMENT</div>
+        <h2>Complete payment</h2>
+        <p class="modal-sub">Pay via UPI to confirm your spot</p>
+
+        <!-- Amount -->
+        <div class="pay-amount">
+          <div>
+            <div class="pay-amount-lbl">Amount to pay</div>
+            <div style="font-size:12px;color:var(--ink4);font-family:'Courier Prime',monospace" id="pay-event-name">—</div>
+          </div>
+          <div class="pay-amount-val" id="pay-amount">₹299</div>
+        </div>
+
+        <!-- UPI App selector -->
+        <div style="font-family:'Courier Prime',monospace;font-size:10px;letter-spacing:0.08em;color:var(--ink3);margin-bottom:10px">CHOOSE YOUR UPI APP</div>
+        <div class="upi-grid">
+          <button class="upi-btn" id="upi-gpay" onclick="selectUPI('gpay')">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f2/Google_Pay_Logo.svg/120px-Google_Pay_Logo.svg.png" alt="GPay" onerror="this.style.display='none'"/>
+            <div class="upi-name"><span class="upi-app">GPay</span><span class="upi-id">Google Pay</span></div>
+          </button>
+          <button class="upi-btn" id="upi-phonepe" onclick="selectUPI('phonepe')">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/71/PhonePe_Logo.svg/120px-PhonePe_Logo.svg.png" alt="PhonePe" onerror="this.style.display='none'"/>
+            <div class="upi-name"><span class="upi-app">PhonePe</span><span class="upi-id">PhonePe UPI</span></div>
+          </button>
+          <button class="upi-btn" id="upi-paytm" onclick="selectUPI('paytm')">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/Paytm_Logo_%28standalone%29.svg/120px-Paytm_Logo_%28standalone%29.svg.png" alt="Paytm" onerror="this.style.display='none'"/>
+            <div class="upi-name"><span class="upi-app">Paytm</span><span class="upi-id">Paytm UPI</span></div>
+          </button>
+          <button class="upi-btn" id="upi-other" onclick="selectUPI('other')">
+            <div style="width:32px;height:32px;background:var(--cream3);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:18px">💳</div>
+            <div class="upi-name"><span class="upi-app">Any UPI</span><span class="upi-id">Other apps</span></div>
+          </button>
+        </div>
+
+        <!-- UPI ID to pay -->
+        <div style="font-family:'Courier Prime',monospace;font-size:10px;letter-spacing:0.08em;color:var(--ink3);margin-bottom:8px">PAY TO THIS UPI ID</div>
+        <div class="upi-id-box">
+          <div class="upi-id-text">speakcircle@slc</div>
+          <button class="upi-copy-btn" id="copy-btn" onclick="copyUPI()">Copy</button>
+        </div>
+
+        <!-- How to pay steps -->
+        <div class="pay-steps">
+          <div class="pay-step"><div class="pay-step-num">1</div>Open your UPI app (GPay / PhonePe / Paytm)</div>
+          <div class="pay-step"><div class="pay-step-num">2</div>Pay <strong id="pay-step-amount">₹299</strong> to <strong>speakcircle@slc</strong></div>
+          <div class="pay-step"><div class="pay-step-num">3</div>Copy the Transaction ID from your app</div>
+          <div class="pay-step"><div class="pay-step-num">4</div>Paste it below and click Confirm</div>
+        </div>
+
+        <div class="pay-divider">Enter Transaction ID after payment</div>
+
+        <!-- Transaction ID input -->
+        <div class="txn-wrap">
+          <div class="txn-label">UPI TRANSACTION ID *</div>
+          <input class="txn-input" type="text" id="txn-id" placeholder="e.g. 426987654321 or T2024XXXXXX" autocomplete="off"/>
+          <div class="txn-hint">Found in your UPI app under payment history</div>
+        </div>
+
+        <div class="m-err" id="err2"></div>
+        <button class="modal-btn" onclick="confirmPayment()">Confirm booking →</button>
+        <button style="width:100%;padding:11px;background:transparent;border:none;color:var(--ink4);font-size:13px;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;margin-top:6px" onclick="goToStep(1)">← Back</button>
+      </div>
+
+      <!-- ── STEP 3: SUCCESS ── -->
+      <div class="modal-step" id="step3">
+        <div class="success-wrap">
+          <div class="success-ico">🎉</div>
+          <div class="success-title">You're booked!</div>
+          <p class="success-sub">Your spot is reserved. We'll confirm on WhatsApp once we verify your payment.<br><br>
+            <strong>Transaction ID:</strong> <span id="conf-txn" style="font-family:'Courier Prime',monospace;color:var(--rust)"></span>
+          </p>
+          <a class="whatsapp-btn" id="whatsapp-link" href="#" target="_blank">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+            Message us on WhatsApp
+          </a>
+          <button class="close-btn" onclick="closeModal()">Close</button>
+        </div>
+      </div>
+
+    </div><!-- modal-inner -->
+  </div>
+</div>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+// ══════════════════════════════════════
+// SUPABASE
+// ══════════════════════════════════════
+const SUPA_URL = 'https://yafszankflyimtymdcie.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlhZnN6YW5rZmx5aW10eW1kY2llIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM5MTM0OTAsImV4cCI6MjA4OTQ4OTQ5MH0.Jv5wrlVnxE0gOXfZwQfW-DvxOpciohcPi38OdFb7G_M';
+const db = supabase.createClient(SUPA_URL, SUPA_KEY);
+
+const TC = {skill:'rust', social:'teal', network:'amber'};
+const TL = {skill:'SKILL CIRCLE', social:'SOCIAL CIRCLE', network:'NETWORK CIRCLE'};
+const TV = {skill:'var(--rust)', social:'var(--teal)', network:'var(--amber)'};
+const PRICES = {skill:299, social:249, network:399};
+const WHATSAPP_NUMBER = '919445883798';
+
+let _all=[], _filter='all', _search='';
+let _bookingData = {}; // holds step 1 data
+let _selectedUPI = '';
+
+// ══════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════
+function fmtDate(d,t){
+  if(!d)return'—';
+  const dt=new Date(d+'T'+(t||'00:00'));
+  return dt.toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short',year:'numeric'})+(t?' · '+fmtTime(t):'');
+}
+function fmtTime(t){
+  if(!t)return'';
+  const[h,m]=t.split(':').map(Number);
+  return`${h%12||12}:${String(m).padStart(2,'0')} ${h>=12?'PM':'AM'}`;
+}
+function goTo(sel){const el=document.querySelector(sel);if(el)el.scrollIntoView({behavior:'smooth',block:'start'});}
+function toggleFaq(el){el.parentElement.classList.toggle('open');}
+
+// ══════════════════════════════════════
+// LOAD EVENTS
+// ══════════════════════════════════════
+async function loadEvents(){
+  const badge=document.getElementById('sync-badge');
+  try{
+    const{data,error}=await db.from('events').select('*').eq('status','upcoming').order('date',{ascending:true});
+    if(error)throw error;
+    _all=data||[];
+    badge.textContent='● Live · '+_all.length+' event'+(_all.length!==1?'s':'');
+    badge.style.background='var(--teal-l)';badge.style.color='var(--teal)';
+    renderListing();populateEventDropdown('skill');
+  }catch(e){
+    badge.textContent='● Could not connect';
+    badge.style.background='var(--rust-l)';badge.style.color='var(--rust)';
+    document.getElementById('events-grid').innerHTML=`<div class="no-events"><div style="font-size:36px;margin-bottom:12px">⚠</div><h3>Could not load events</h3><p>${e.message}</p></div>`;
+  }
+}
+
+// ══════════════════════════════════════
+// LISTING
+// ══════════════════════════════════════
+function setFilter(f,btn){
+  _filter=f;
+  document.querySelectorAll('.ftab').forEach(t=>t.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  else{const idx={all:0,skill:1,social:2,network:3}[f];document.querySelectorAll('.ftab')[idx]?.classList.add('active');}
+  renderListing();
+}
+function setSearch(v){_search=v;renderListing();}
+
+function renderListing(){
+  const q=_search.toLowerCase();
+  const list=_all.filter(e=>{
+    const mt=_filter==='all'||e.type===_filter;
+    const ms=!q||e.title?.toLowerCase().includes(q)||e.theme?.toLowerCase().includes(q)||e.venue?.toLowerCase().includes(q)||e.metro?.toLowerCase().includes(q);
+    return mt&&ms;
+  });
+  document.getElementById('rc').textContent=list.length+' event'+(list.length!==1?'s':'');
+  const grid=document.getElementById('events-grid');
+  if(!list.length){
+    grid.innerHTML=`<div class="no-events"><div style="font-size:36px;margin-bottom:12px">${_filter!=='all'||_search?'🔍':'📅'}</div><h3>${_filter!=='all'||_search?'No events match':'No upcoming events'}</h3><p>${_filter!=='all'||_search?'Try a different filter.':'Events will appear here once created.'}</p></div>`;
+    return;
+  }
+  grid.innerHTML=list.map(e=>{
+    const sl=(e.cap||8)-(e.booked||0);
+    const pct=Math.round((e.booked||0)/(e.cap||8)*100);
+    const full=sl<=0;
+    const c=TC[e.type]||'rust';
+    const cv=TV[e.type]||'var(--rust)';
+    return`<div class="event-card" onclick="openDetail('${e.id}')">
+      <div class="ec-bar ${c}"></div>
+      <div class="ec-body">
+        <div class="ec-top">
+          <div class="ec-badge ${c}">${TL[e.type]||e.type?.toUpperCase()}</div>
+          <div class="ec-dot${full?' full':''}"></div>
+        </div>
+        <div class="ec-title">${e.title}</div>
+        <div class="ec-theme">"${e.theme||''}"</div>
+        <div class="ec-meta">
+          <div class="ec-row"><div class="ec-icon">📅</div>${fmtDate(e.date,e.time)}</div>
+          <div class="ec-row"><div class="ec-icon">🕐</div>${fmtTime(e.time)} – ${fmtTime(e.end_time)}</div>
+          <div class="ec-row"><div class="ec-icon">📍</div>${e.venue||'—'} · ${e.metro||''} metro</div>
+          <div class="ec-row"><div class="ec-icon">🎙</div>${e.fac||'—'}${e.fac_rating?' · ★'+e.fac_rating:''}</div>
+        </div>
+        <div class="spots-row">
+          <span style="font-size:11px;color:var(--ink3)">${e.booked||0}/${e.cap||8} filled</span>
+          <span style="font-family:'Courier Prime',monospace;font-size:10px;font-weight:700;color:${full?'var(--rust)':cv}">${full?'FULL':sl+' LEFT'}</span>
+        </div>
+        <div class="spots-track"><div class="spots-fill" style="width:${pct}%;background:${cv}"></div></div>
+        <div class="ec-footer">
+          <div>
+            <div class="ec-price" style="color:${cv}">₹${e.price}</div>
+            <div class="ec-mprice">₹${e.member_price||'—'} for members</div>
+          </div>
+          ${full?`<div class="sold-badge">Sold out</div>`:`<button class="book-btn" onclick="openModal('${e.type}',event);event.stopPropagation()">Book →</button>`}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════
+// DETAIL
+// ══════════════════════════════════════
+function openDetail(id){
+  const e=_all.find(ev=>ev.id===id);if(!e)return;
+  renderDetail(e);
+  document.getElementById('listing-view').style.display='none';
+  document.getElementById('detail-view').style.display='block';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function showListing(){
+  document.getElementById('detail-view').style.display='none';
+  document.getElementById('listing-view').style.display='block';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function renderDetail(e){
+  const c=TC[e.type]||'rust';
+  const cv=TV[e.type]||'var(--rust)';
+  const sl=(e.cap||8)-(e.booked||0);
+  const pct=Math.round((e.booked||0)/(e.cap||8)*100);
+  const full=sl<=0;
+  const bullets=e.bullets||[];
+  document.getElementById('dh-left').innerHTML=`
+    <div class="dh-badge ${c}">${TL[e.type]||e.type?.toUpperCase()}</div>
+    <h1 class="dh-title">${e.title}</h1>
+    <p class="dh-desc">${e.description||''}</p>
+    <div class="facts-grid">
+      <div class="fact"><div class="fact-lbl">DATE</div><div class="fact-val">${fmtDate(e.date,e.time)}</div></div>
+      <div class="fact"><div class="fact-lbl">END TIME</div><div class="fact-val">${fmtTime(e.end_time)||'60 min'}</div></div>
+      <div class="fact"><div class="fact-lbl">VENUE</div><div class="fact-val">${e.venue||'—'}</div></div>
+      <div class="fact"><div class="fact-lbl">METRO</div><div class="fact-val">${e.metro||'—'} metro</div></div>
+      <div class="fact"><div class="fact-lbl">SPOTS</div><div class="fact-val">${e.booked||0}/${e.cap||8} filled</div></div>
+      <div class="fact"><div class="fact-lbl">PRICE</div><div class="fact-val">₹${e.price}</div></div>
+    </div>
+    ${bullets.length?`<div class="bullets-head">What happens in this session</div><div class="bullets-list">${bullets.map(b=>`<div class="bullet-row"><div class="bdot ${c}"></div>${b}</div>`).join('')}</div>`:''}
+  `;
+  document.getElementById('bpanel').innerHTML=`
+    <div class="bp-h">Book your spot</div>
+    <div class="bp-price" style="color:${cv}">₹${e.price}</div>
+    <div class="bp-mprice">₹${e.member_price||'—'} for members</div>
+    <div class="bp-srow">
+      <span class="bp-st">${e.booked||0} of ${e.cap||8} filled</span>
+      <span class="bp-slbl" style="color:${full?'var(--rust)':cv}">${full?'SOLD OUT':sl+' LEFT'}</span>
+    </div>
+    <div class="bp-track"><div class="bp-fill" style="width:${pct}%;background:${cv}"></div></div>
+    <div class="bp-hint">${full?'Join the waitlist':'Fills fast — book early'}</div>
+    ${full?`<button class="bp-btn" style="background:var(--ink4)" disabled>Sold out</button>`:`<button class="bp-btn" style="background:${cv}" onclick="openModal('${e.type}',event)">Reserve my spot →</button>`}
+    <button class="bp-wl">Join waitlist</button>
+    <div class="bp-info">
+      <div class="bp-irow"><div class="bp-iico">📅</div><div><b>Date & time</b>${fmtDate(e.date,e.time)}</div></div>
+      <div class="bp-irow"><div class="bp-iico">📍</div><div><b>Location</b>${e.venue||'—'} · ${e.metro||''} metro</div></div>
+      <div class="bp-irow"><div class="bp-iico">🎙</div><div><b>Facilitator</b>${e.fac||'—'}${e.fac_rating?' · ★'+e.fac_rating:''}</div></div>
+      <div class="bp-irow"><div class="bp-iico">💳</div><div><b>Payment</b>UPI only · speakcircle@slc</div></div>
+      <div class="bp-irow"><div class="bp-iico">↩</div><div><b>Refund</b>Full refund if cancelled 12 hrs before</div></div>
+    </div>
+  `;
+}
+
+// ══════════════════════════════════════
+// MODAL STEP MANAGEMENT
+// ══════════════════════════════════════
+function goToStep(n){
+  [1,2,3].forEach(i=>{
+    document.getElementById('step'+i).classList.toggle('active',i===n);
+    const dot=document.getElementById('sd'+i);
+    if(i<n)dot.className='step-dot done';
+    else if(i===n)dot.className='step-dot active';
+    else dot.className='step-dot inactive';
+  });
+  [1,2].forEach(i=>{
+    const line=document.getElementById('sl'+i);
+    if(line)line.className='step-line'+(i<n?' done':'');
+  });
+  // scroll modal to top
+  document.querySelector('.modal').scrollTop=0;
+}
+
+const TAGS={skill:'SKILL CIRCLE',social:'SOCIAL CIRCLE',network:'NETWORK CIRCLE'};
+const SUBS={skill:'English Speaking Circle · ₹299',social:'Fun Social Circle · ₹249',network:'Network Circle · ₹399'};
+
+function populateEventDropdown(type){
+  const sel=document.getElementById('f-event-sel');
+  const list=_all.filter(e=>!type||e.type===type);
+  sel.innerHTML=list.length
+    ?list.map(e=>`<option value="${e.id}">${fmtDate(e.date,e.time).substring(0,20)} — ${e.theme||e.title}</option>`).join('')
+    :'<option value="">No upcoming sessions</option>';
+}
+
+function openModal(type,e){
+  if(e){e.preventDefault();e.stopPropagation();}
+  const t=type||'skill';
+  document.getElementById('m-tag').textContent=TAGS[t];
+  document.getElementById('m-sub').textContent=SUBS[t];
+  const sel=document.getElementById('f-type');
+  for(let i=0;i<sel.options.length;i++)if(sel.options[i].value===t){sel.selectedIndex=i;break;}
+  populateEventDropdown(t);
+  goToStep(1);
+  document.getElementById('err1').style.display='none';
+  document.getElementById('err2').style.display='none';
+  document.getElementById('txn-id').value='';
+  _selectedUPI='';
+  document.querySelectorAll('.upi-btn').forEach(b=>b.classList.remove('selected'));
+  document.getElementById('modal-bg').classList.add('open');
+}
+function closeModal(){document.getElementById('modal-bg').classList.remove('open');}
+
+document.getElementById('f-type').addEventListener('change',function(){
+  populateEventDropdown(this.value);
+  document.getElementById('m-tag').textContent=TAGS[this.value]||'';
+  document.getElementById('m-sub').textContent=SUBS[this.value]||'';
+});
+
+// ══════════════════════════════════════
+// STEP 1 → STEP 2
+// ══════════════════════════════════════
+function goToPayment(){
+  const fname=document.getElementById('f-fname').value.trim();
+  const email=document.getElementById('f-email').value.trim();
+  const phone=document.getElementById('f-phone').value.trim();
+  const err=document.getElementById('err1');
+  if(!fname){err.textContent='Please enter your name.';err.style.display='block';return;}
+  if(!email||!email.includes('@')){err.textContent='Please enter a valid email.';err.style.display='block';return;}
+  if(!phone){err.textContent='Please enter your WhatsApp number.';err.style.display='block';return;}
+  err.style.display='none';
+
+  // Store step 1 data
+  const selEvId=document.getElementById('f-event-sel').value;
+  const selEv=_all.find(e=>e.id===selEvId);
+  _bookingData={
+    name:fname+' '+document.getElementById('f-lname').value,
+    email,phone,
+    type:document.getElementById('f-type').value,
+    event_id:selEvId||null,
+    event_date:selEv?fmtDate(selEv.date,selEv.time).substring(0,25):null,
+    source:document.getElementById('f-source').value,
+    event:selEv,
+    price:selEv?selEv.price:PRICES[document.getElementById('f-type').value]||299
+  };
+
+  // Update payment step UI
+  document.getElementById('pay-amount').textContent='₹'+_bookingData.price;
+  document.getElementById('pay-step-amount').textContent='₹'+_bookingData.price;
+  document.getElementById('pay-event-name').textContent=selEv?selEv.title+' · '+fmtDate(selEv.date,selEv.time).substring(0,15):'—';
+
+  goToStep(2);
+}
+
+// ══════════════════════════════════════
+// UPI APP SELECTION
+// ══════════════════════════════════════
+function selectUPI(app){
+  _selectedUPI=app;
+  document.querySelectorAll('.upi-btn').forEach(b=>b.classList.remove('selected'));
+  document.getElementById('upi-'+app)?.classList.add('selected');
+}
+
+function copyUPI(){
+  navigator.clipboard.writeText('speakcircle@slc').then(()=>{
+    const btn=document.getElementById('copy-btn');
+    btn.textContent='Copied!';btn.classList.add('copied');
+    setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied');},2000);
+  }).catch(()=>{
+    // fallback
+    const el=document.createElement('textarea');
+    el.value='speakcircle@slc';document.body.appendChild(el);
+    el.select();document.execCommand('copy');document.body.removeChild(el);
+    const btn=document.getElementById('copy-btn');
+    btn.textContent='Copied!';btn.classList.add('copied');
+    setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied');},2000);
+  });
+}
+
+// ══════════════════════════════════════
+// STEP 2 → STEP 3: Confirm Payment
+// ══════════════════════════════════════
+async function confirmPayment(){
+  const txn=document.getElementById('txn-id').value.trim();
+  const err=document.getElementById('err2');
+  if(!txn||txn.length<6){
+    err.textContent='Please enter your UPI Transaction ID (found in your payment app).';
+    err.style.display='block';return;
+  }
+  err.style.display='none';
+
+  const btn=document.querySelector('#step2 .modal-btn');
+  btn.disabled=true;btn.textContent='Confirming…';
+
+  try{
+    // Save booking to Supabase
+    const{error}=await db.from('bookings').insert({
+      name:_bookingData.name,
+      email:_bookingData.email,
+      phone:_bookingData.phone,
+      type:_bookingData.type,
+      event_id:_bookingData.event_id||null,
+      event_date:_bookingData.event_date||null,
+      source:_bookingData.source,
+      status:'pending',
+      txn_id: txn,   // needs txn_id column — see note below
+    });
+
+    // If txn_id column doesn't exist yet, catch and still proceed
+    if(error&&!error.message.includes('txn_id')){throw error;}
+
+    // Increment booked count
+    if(_bookingData.event){
+      await db.from('events').update({booked:(_bookingData.event.booked||0)+1}).eq('id',_bookingData.event_id);
+      _bookingData.event.booked=(_bookingData.event.booked||0)+1;
+      renderListing();
+    }
+
+    // Build WhatsApp message
+    const msg=encodeURIComponent(
+      `Hi SpeakCircle! 🎉\n\nI just booked a spot:\n\n`+
+      `👤 Name: ${_bookingData.name}\n`+
+      `📧 Email: ${_bookingData.email}\n`+
+      `📱 Phone: ${_bookingData.phone}\n`+
+      `🎯 Event: ${_bookingData.event?_bookingData.event.title:'—'}\n`+
+      `📅 Date: ${_bookingData.event_date||'—'}\n`+
+      `💰 Amount Paid: ₹${_bookingData.price}\n`+
+      `🧾 UPI Transaction ID: ${txn}\n\n`+
+      `Please confirm my booking. Thank you!`
+    );
+    document.getElementById('whatsapp-link').href=`https://wa.me/${WHATSAPP_NUMBER}?text=${msg}`;
+    document.getElementById('conf-txn').textContent=txn;
+
+    goToStep(3);
+  }catch(e){
+    err.textContent='Error: '+e.message;err.style.display='block';
+  }finally{
+    btn.disabled=false;btn.textContent='Confirm booking →';
+  }
+}
+
+// ══════════════════════════�
